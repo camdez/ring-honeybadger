@@ -1,5 +1,7 @@
 # camdez/ring-honeybadger
 
+[![Clojars Project][clojars-badge]][clojars-ring-honeybadger]
+
 Ring middleware for sending errors to honeybadger.io using the
 standalone [honeybadger][1] library.
 
@@ -23,3 +25,6 @@ standalone [honeybadger][1] library.
 Copyright © 2015 Cameron Desautels
 
 Distributed under the MIT License.
+
+[clojars-badge]: http://clojars.org/camdez/ring-honeybadger/latest-version.svg
+[clojars-ring-honeybadger]: http://clojars.org/camdez/ring-honeybadger
