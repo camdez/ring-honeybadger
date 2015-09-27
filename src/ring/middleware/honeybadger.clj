@@ -32,5 +32,9 @@
     (try
       (handler request)
       (catch Throwable t
-        @(hb/notify options t (request->metadata request))
+        (let [{:keys [callback]} options
+              hb-options (select-keys options [:api-key :env])
+              hb-id @(hb/notify hb-options t (request->metadata request))]
+          (when callback
+            (callback t hb-id)))
         (throw t)))))

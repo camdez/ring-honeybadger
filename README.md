@@ -20,6 +20,18 @@ standalone [honeybadger][1] library.
   (wrap-honeybadger handler hb-config))
 ```
 
+If you'd like to run code when exceptions are reported, you can
+provide a callback function which will be invoked with the reported
+exception and the resultant Honeybadger ID. For example:
+
+```clj
+(def hb-config
+  {:api-key  "d34db33f"
+   :env      "development"
+   :callback (fn [_ex id]
+               (info (str "Reported exception to Honeybadger with ID" id)))})
+```
+
 ## License
 
 Copyright © 2015 Cameron Desautels
