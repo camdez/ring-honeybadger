@@ -15,13 +15,19 @@
     (:params request)
     (merge (:query-params request) (:form-params request))))
 
-(defn- request->metadata [request]
+(defn- request->metadata
+  "Given a Ring request, extract and format the key details as
+  honeybadger metadata."
+  [request]
   {:request {:method  (:request-method request)
              :url     (req/request-url request)
              :params  (request-params request)
              :session (:session request)}})
 
-(defn wrap-honeybadger [handler options]
+(defn wrap-honeybadger
+  "Ring middleware to report handler exceptions to
+  honeybadger.io. :api-key is the only required option."
+  [handler options]
   (fn [request]
     (try
       (handler request)
