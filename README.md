@@ -3,11 +3,11 @@
 [![Clojars Project][clojars-badge]][clojars-ring-honeybadger]
 
 Ring middleware for sending errors to honeybadger.io using the
-standalone [honeybadger][1] library.
-
-[1]: https://github.com/camdez/honeybadger
+standalone [honeybadger][hb] library.
 
 ## Usage
+
+### Basics
 
 ```clj
 (require '[ring.middleware.honeybadger :refer [wrap-honeybadger]])
@@ -20,16 +20,42 @@ standalone [honeybadger][1] library.
   (wrap-honeybadger handler hb-config))
 ```
 
-If you'd like to run code when exceptions are reported, you can
-provide a callback function which will be invoked with the reported
-exception and the resultant Honeybadger ID. For example:
+### Filters
+
+The underlying [honeybadger][hb] library supports a flexible mechanism
+called *filters* for controlling exactly what gets sent to
+Honeybadger, and under what conditions. There is also a collection of
+filters for common operations in the `honeybadger.filter` namespace:
+
+```clj
+(require '[honeybadger.filter :as hbf])
+
+(def hb-config
+  {:api-key "d34db33f"
+   :env     "development"
+   :filters [(hbf/only   (hbd/env? :production))              ; only report exceptions in prod
+             (hbf/except (hbd/instance? ArithmeticException)) ; never report ArithmeticExceptions
+             (hbf/obscure-params [[:config :password]         ; replace these params with
+                                  [:secret-id])]})            ;   "[FILTERED]" (if present)
+```
+
+For full details, see that library's documentation.
+
+### Callbacks
+
+If you'd like to run code when errors are reported, you can provide a
+callback function which will be invoked with the reported error and
+the resultant Honeybadger ID (or `nil` if reporting was suppressed by
+a filter). For example:
 
 ```clj
 (def hb-config
   {:api-key  "d34db33f"
    :env      "development"
    :callback (fn [_ex id]
-               (info (str "Reported exception to Honeybadger with ID" id)))})
+               (println (when id
+                          (str "Reported error to Honeybadger with ID " id)
+                          "Error reporting suppressed by filter")))})
 ```
 
 ## License
@@ -38,5 +64,6 @@ Copyright © 2015 Cameron Desautels
 
 Distributed under the MIT License.
 
+[hb]: https://github.com/camdez/honeybadger
 [clojars-badge]: http://clojars.org/camdez/ring-honeybadger/latest-version.svg
 [clojars-ring-honeybadger]: http://clojars.org/camdez/ring-honeybadger

@@ -33,7 +33,7 @@
       (handler request)
       (catch Throwable t
         (let [{:keys [callback]} options
-              hb-options (select-keys options [:api-key :env])
+              hb-options (select-keys options [:api-key :env :filters])
               hb-id @(hb/notify hb-options t (request->metadata request))]
           (when callback
             (callback t hb-id)))
