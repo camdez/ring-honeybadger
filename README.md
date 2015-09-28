@@ -33,8 +33,8 @@ filters for common operations in the `honeybadger.filter` namespace:
 (def hb-config
   {:api-key "d34db33f"
    :env     "development"
-   :filters [(hbf/only   (hbd/env? :production))              ; only report exceptions in prod
-             (hbf/except (hbd/instance? ArithmeticException)) ; never report ArithmeticExceptions
+   :filters [(hbf/only   (hbf/env? :production))              ; only report exceptions in prod
+             (hbf/except (hbf/instance? ArithmeticException)) ; never report ArithmeticExceptions
              (hbf/obscure-params [[:config :password]         ; replace these params with
                                   [:secret-id])]})            ;   "[FILTERED]" (if present)
 ```
