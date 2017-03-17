@@ -49,13 +49,16 @@ the resultant Honeybadger ID (or `nil` if reporting was suppressed by
 a filter). For example:
 
 ```clj
+(defn hb-callback [_err id]
+  (println
+   (if id
+     (str "Reported error to Honeybadger with ID " id)
+     "Error reporting suppressed by filter")))
+
 (def hb-config
   {:api-key  "d34db33f"
    :env      "development"
-   :callback (fn [_ex id]
-               (println (when id
-                          (str "Reported error to Honeybadger with ID " id)
-                          "Error reporting suppressed by filter")))})
+   :callback hb-callback})
 ```
 
 ## License
