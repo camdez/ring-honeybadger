@@ -24,6 +24,12 @@
              :params  (request-params request)
              :session (:session request)}})
 
+(defn notify
+  "Notify Honeybadger of error.  Exists to make testing
+  easier (i.e. using `with-redefs`)."
+  [config ex metadata]
+  @(hb/notify config ex metadata))
+
 (defn wrap-honeybadger
   "Ring middleware to report handler exceptions to
   honeybadger.io. :api-key is the only required option."
@@ -34,7 +40,7 @@
       (catch Throwable t
         (let [{:keys [callback]} options
               hb-options (select-keys options [:api-key :env :filters])
-              hb-id @(hb/notify hb-options t (request->metadata request))]
+              hb-id (notify hb-options t (request->metadata request))]
           (when callback
             (callback t hb-id)))
         (throw t)))))
