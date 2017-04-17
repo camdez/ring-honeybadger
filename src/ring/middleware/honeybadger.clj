@@ -30,6 +30,12 @@
   [config ex metadata]
   @(hb/notify config ex metadata))
 
+(defn- bounced-error? [ex]
+  (::bounced-request (ex-data ex)))
+
+(defn- bounce [ex req]
+  (ex-info "Bouncing error" {::bounced-request req} ex))
+
 (defn wrap-honeybadger
   "Ring middleware to report handler exceptions to
   honeybadger.io. :api-key is the only required option."
@@ -39,8 +45,24 @@
       (handler request)
       (catch Throwable t
         (let [{:keys [callback]} options
+              [t request] (if (bounced-error? t)
+                            [(.getCause t) (::bounced-request (ex-data t))]
+                            [t request])
               hb-options (select-keys options [:api-key :env :filters])
               hb-id (notify hb-options t (request->metadata request))]
           (when callback
             (callback t hb-id)))
         (throw t)))))
+
+(defn wrap-honeybadger-bouncer
+  "Ring middleware which can be installed later in the middleware
+  chain to allow taking advantage of later processing of the request
+  by middleware.  Will \"bounce\" the more fully processed request up
+  to stack to the reporter, via a specialized exception type.  Can be
+  wrapped multiple times will no ill effects."
+  [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch Throwable t
+        (throw (if (bounced-error? t) t (bounce t request)))))))

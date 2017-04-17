@@ -61,6 +61,32 @@ a filter). For example:
    :callback hb-callback})
 ```
 
+## Bouncing
+
+The middleware-based approach to exception handling has one major
+caveat---we want to install the middleware as early as possible in the
+middleware chain so that we don't miss any exceptions, but doing so
+means we don't get any of the benefits of other middleware in our
+exception reports.  Since the call stack is unwound to the `try` form,
+the request as seen by the handling code is the request when it
+*entered* the exception handler, meaning we may not even have basic
+functionality like parameter parsing or session support, let alone
+user authentication, which could be valuable in diagnosing issues.
+
+[ring-defaults][] only exacerbates this problem by applying a number
+of middleware together which we can only precede or follow (but not
+insert into).
+
+To help with this problem, this library provides a second middleware,
+`wrap-honeybadger-bouncer`; this middleware can be installed later in
+the middleware chain to capture the more fully-processed request.  It
+will then rethrow the exception to the `wrap-honeybadger` middleware
+to be reported with this processed request.  You can apply this
+middleware as often as you like without ill effect, but as a general
+rule you'll want to install it last in the middleware chain so it
+directly wraps your application code (the most likely source of
+exceptions).
+
 ## License
 
 Copyright © 2015 Cameron Desautels
@@ -70,3 +96,4 @@ Distributed under the MIT License.
 [hb]: https://github.com/camdez/honeybadger
 [clojars-badge]: http://clojars.org/camdez/ring-honeybadger/latest-version.svg
 [clojars-ring-honeybadger]: http://clojars.org/camdez/ring-honeybadger
+[ring-defaults]: https://github.com/ring-clojure/ring-defaults
