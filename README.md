@@ -41,6 +41,28 @@ filters for common operations in the `honeybadger.filter` namespace:
 
 For full details, see that library's documentation.
 
+### Context
+
+If you'd like to add contextual metadata to the error report you can
+provide a context-generating function in the config parameter under
+the `:context-fn` key.  The function will be called with the current
+request, and it should return a map of metadata which can be
+serialized to JSON.
+
+This map can contain any information which will help you to make sense
+of the reported errors, but there are two keys which have special
+significance to Honeybadger: `:user-id` and `:user-email`; these keys
+are used to show which users are experiencing the reported issue.
+
+```clj
+(def hb-config
+  {:api-key    "d34db33f"
+   :env        "development"
+   :context-fn (fn [req]
+                 {:user-id (auth/current-user-id req)
+                  ,,,}))
+```
+
 ### Callbacks
 
 If you'd like to run code when errors are reported, you can provide a

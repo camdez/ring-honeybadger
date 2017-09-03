@@ -32,9 +32,11 @@
     (try
       (handler request)
       (catch Throwable t
-        (let [{:keys [callback]} options
+        (let [{:keys [callback context-fn]} options
               hb-options (select-keys options [:api-key :env :filters])
-              hb-id @(hb/notify hb-options t (request->metadata request))]
+              metadata (cond-> (request->metadata request)
+                         context-fn (assoc :context (context-fn request)))
+              hb-id @(hb/notify hb-options t metadata)]
           (when callback
             (callback t hb-id)))
         (throw t)))))
