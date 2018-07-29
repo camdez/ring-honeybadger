@@ -1,4 +1,4 @@
-(defproject camdez/ring-honeybadger "0.3.1"
+(defproject camdez/ring-honeybadger "0.3.2-SNAPSHOT"
   :description "Ring middleware for reporting errors to honeybadger.io"
   :url "https://github.com/camdez/ring-honeybadger"
   :license {:name "MIT License"
