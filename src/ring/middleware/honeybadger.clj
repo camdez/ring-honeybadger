@@ -2,6 +2,8 @@
   (:require [honeybadger.core :as hb]
             [ring.util.request :as req]))
 
+(def cgi_data-fields ["query-string" "remote-addr" "server-port" "server-name"])
+
 (defn- request-params
   "Determine params map to send to Honeybadger. Uses value of :params
   if present, else merges :query-params and :form-params.
@@ -15,6 +17,13 @@
     (:params request)
     (merge (:query-params request) (:form-params request))))
 
+(defn- screaming-snake-case
+  "Converts strings to SCREAMING_SNAKE_CASE."
+  [& strings]
+  (-> (apply str strings)
+      clojure.string/upper-case
+      (clojure.string/replace "-" "_")))
+
 (defn- request->metadata
   "Given a Ring request, extract and format the key details as
   honeybadger metadata."
@@ -22,7 +31,19 @@
   {:request {:method  (:request-method request)
              :url     (req/request-url request)
              :params  (request-params request)
-             :session (:session request)}})
+             :session (:session request)
+             :cgi-data (merge
+                        (->> request
+                             :headers
+                             (map (fn[[key value]]
+                                    [(screaming-snake-case "HTTP_" key)
+                                     value]))
+                             (into {}))
+                        (->> cgi_data-fields
+                             (map (fn[key]
+                                    [(screaming-snake-case key)
+                                     (get request (keyword key))]))
+                             (into {})))}})
 
 (defn wrap-honeybadger
   "Ring middleware to report handler exceptions to
